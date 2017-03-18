@@ -65,6 +65,7 @@ addProjectToList() {
         return
     fi
 
+    project_path="$(realpath $project_path)"
     echo "${project_name}:${project_path}" >> "$PROJECT_LIST"
 }
 
