@@ -28,6 +28,12 @@ To add a project:
 project add project_name project_path
 ```
 
+Or to use the current directory, simply omit the last argument:
+
+```sh
+project add project_name2
+```
+
 The only limitation is the project name cannot contain a colon. The project_path doesn't have to exist when you add it.
 
 To remove a project:
@@ -40,4 +46,10 @@ To cd to the project:
 
 ```sh
 project cd project_name
+```
+
+To list known projects:
+
+```sh
+project ls
 ```
