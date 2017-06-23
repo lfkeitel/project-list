@@ -48,9 +48,14 @@ addProjectToList() {
     project_name="$1"
     project_path="$2"
 
-    if [ -z "$project_name" -o -z "$project_path" ]; then
+    if [ -z "$project_name" ]; then
         usage
         return
+    fi
+
+    if [ -z "$project_path" ]; then
+        echo "No path given, using current directory"
+        project_path="$PWD"
     fi
 
     checkProjectName "$project_name"
@@ -127,10 +132,10 @@ changeToProjectDir() {
         awk -F: '{ printf $2; printf ":" }')"
     projects="${projects%?}"
 
-    IFS=':' read -r -a projectsArr <<< "$projects"
+    IFS=':' read -r -A projectsArr <<< "$projects"
 
     if [ ${#projectsArr[@]} -eq 1 ]; then
-        cd "${projectsArr[0]}"
+        cd "${projectsArr}"
         return
     fi
 
@@ -191,3 +196,8 @@ case "$1" in
         usage
 esac
 }
+
+# If invoked as a normal script, execute with arguments
+if [ "$#" -gt 0 ]; then
+    project "$@"
+fi
