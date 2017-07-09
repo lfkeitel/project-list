@@ -18,6 +18,12 @@ It's a lot shorter, and less remembering.
 
 Installing is simple. Download the script and place it anywhere you like. In your .bashrc, add a `source` line to load the script. For example, if the script is at `/home/user/scripts/project.sh`, then add the line `source /home/user/script/project.sh`.
 
+### ZSH
+
+If you use oh-my-zsh, clone this repository into `$HOME/.oh-my.zsh/custom/plugins/project` with `git clone https://github.com/lfkeitel/project-list $HOME/.oh-my-zsh/custom/plugins/project`. Then add `project` to your plugin variable in `.zshrc`.
+
+ZSH may error when project is ran for the first time, it's safe to ignore.
+
 ## Usage
 
 For usage information type `project help`.
