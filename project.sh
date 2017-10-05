@@ -3,6 +3,20 @@
 project() {
 local PROJECT_LIST=${PROJECT_LIST:-$HOME/.project.list}
 
+confirmPrompt() {
+    if [[ "$SHELL" =~ "zsh" ]]; then
+        read "response?$1 [y/N]? "
+    else
+        read -r -p "$1 [y/N]? " response
+    fi
+
+    if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        echo "y"
+        return
+    fi
+    echo "n"
+}
+
 makeNewListFile() {
     mkdir -p "$(dirname $PROJECT_LIST)"
     if [ $? -ne 0 ]; then
@@ -21,16 +35,13 @@ makeNewListFile() {
 
 promptNewListFile() {
     echo "Project list doesn't exist."
-    read -r -p "Would you like to make it? $PROJECT_LIST [Y/n] " response
-    if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
+    response="$(confirmPrompt "Would you like to make it? $PROJECT_LIST")"
+    if [ "$response" = "y" ]; then
         makeNewListFile
         return $?
-    elif [ -z "$response" ]; then
-        makeNewListFile
-        return $?
-    else
-        return 1
     fi
+
+    return 1
 }
 
 projectExists() {
@@ -49,8 +60,14 @@ addProjectToList() {
     project_path="$2"
 
     if [ -z "$project_name" ]; then
-        usage
-        return
+        promptName="$(basename $PWD)"
+        echo "No project name given."
+        response="$(confirmPrompt "Would you like to use $promptName")"
+        if [ "$response" = "y" ]; then
+            project_name="$promptName"
+        else
+            return
+        fi
     fi
 
     if [ -z "$project_path" ]; then
@@ -132,7 +149,11 @@ changeToProjectDir() {
         awk -F: '{ printf $2; printf ":" }')"
     projects="${projects%?}"
 
-    IFS=':' read -r -A projectsArr <<< "$projects"
+    if [[ "$SHELL" =~ "zsh" ]]; then
+        IFS=':' read -r -A projectsArr <<< "$projects"
+    else
+        IFS=':' read -r -a projectsArr <<< "$projects"
+    fi
 
     if [ ${#projectsArr[@]} -eq 1 ]; then
         cd "${projectsArr}"
