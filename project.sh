@@ -195,6 +195,16 @@ Commands:
 EOF
 }
 
+showVersion() {
+    cat <<"EOF"
+project-list - v1.5.0
+
+Copyright 2017 Lee Keitel <lee@onesimussystems.com>
+
+This software is distributed under the BSD 3-clause license.
+EOF
+}
+
 if [ ! -f "$PROJECT_LIST" ]; then
     promptNewListFile
     if [ $? -ne 0 ]; then
@@ -213,6 +223,8 @@ case "$1" in
         shift; addProjectToList $@;;
     remove|rm|r)
         shift; removeProjectFromList $@;;
+    version|ver|v)
+        shift; showVersion $@;;
     *)
         usage
 esac
