@@ -50,6 +50,12 @@ projectExists() {
     return $?
 }
 
+checkProjectPathExists() {
+    project="$(grep -P ":$1$" "$PROJECT_LIST")"
+    [ -z "$project" ]
+    return $?
+}
+
 checkProjectName() {
     [ -z "$(echo "$1" | grep ':')" ]
     return $?
@@ -88,7 +94,18 @@ addProjectToList() {
     fi
 
     project_path="$(realpath $project_path)"
+
+    checkProjectPathExists "$project_path"
+    if [ $? -ne 0 ]; then
+        echo "Project path $project_path already exists"
+        response="$(confirmPrompt "Would you like to add a duplicate project?")"
+        if [ "$response" != "y" ]; then
+            return
+        fi
+    fi
+
     echo "${project_name}:${project_path}" >> "$PROJECT_LIST"
+    sortProjectList
 }
 
 removeProjectFromList() {
@@ -106,12 +123,17 @@ removeProjectFromList() {
 
     projectExists "$project_name"
     if [ $? -eq 0 ]; then
-        echo "Project $1 doesn't exist"
         return
     fi
 
     newList="$(grep -vP "^$1:" "$PROJECT_LIST")"
     echo "$newList" > "$PROJECT_LIST"
+}
+
+sortProjectList() {
+    cp "$PROJECT_LIST" /tmp/project.list
+    cat /tmp/project.list | sort > "$PROJECT_LIST"
+    rm -f /tmp/project.list
 }
 
 listAllProjects() {
@@ -197,7 +219,7 @@ EOF
 
 showVersion() {
     cat <<"EOF"
-project-list - v1.5.0
+project-list - v1.6.0
 
 Copyright 2017 Lee Keitel <lee@onesimussystems.com>
 
