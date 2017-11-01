@@ -2,6 +2,7 @@
 
 project() {
 local PROJECT_LIST=${PROJECT_LIST:-$HOME/.project.list}
+local PROJECT_HOOKS_D=${PROJECT_HOOKS_D:-$HOME/.project-hooks.d}
 
 # Prompt with a default of no
 confirmPromptN() {
@@ -161,6 +162,7 @@ listAllProjects() {
 }
 
 searchForProjects() {
+    project_name="$1"
     checkProjectName "$project_name"
     if [ $? -ne 0 ]; then
         echo "Project name cannot contain a colon."
@@ -168,7 +170,7 @@ searchForProjects() {
     fi
 
     echo "Projects:"
-    grep -P "^[^:]*?$1[^:]*?:" "$PROJECT_LIST" | \
+    grep -P "^[^:]*?${project_name}[^:]*?:" "$PROJECT_LIST" | \
         awk -F: '{ printf "  "; \
             printf $1; \
             printf " -> "; \
@@ -176,13 +178,14 @@ searchForProjects() {
 }
 
 changeToProjectDir() {
+    project_name="$1"
     checkProjectName "$project_name"
     if [ $? -ne 0 ]; then
         echo "Project name cannot contain a colon."
         return
     fi
 
-    grep_regex="^[^:]*?$1[^:]*?:"
+    grep_regex="^[^:]*?${project_name}[^:]*?:"
     projects="$(grep -P "$grep_regex" "$PROJECT_LIST" | \
         awk -F: '{ printf $2; printf ":" }')"
     projects="${projects%?}"
@@ -194,7 +197,9 @@ changeToProjectDir() {
     fi
 
     if [ ${#projectsArr[@]} -eq 1 ]; then
+        project_name="$(grep "${projectsArr}" $PROJECT_LIST | cut -d':' -f1)"
         cd "${projectsArr}"
+        run_project_hooks "$project_name"
         return
     fi
 
@@ -217,7 +222,36 @@ changeToProjectDir() {
         return
     fi
 
+    project_name="$(grep "${dest}" $PROJECT_LIST | cut -d':' -f1)"
     cd "$dest"
+    run_project_hooks "$project_name"
+}
+
+edit_project_hook() {
+    project_name="$1"
+    checkProjectName "$project_name"
+    if [ $? -ne 0 ]; then
+        echo "Project name cannot contain a colon."
+        return
+    fi
+
+    projectExists "$project_name"
+    if [ $? -eq 0 ]; then
+        echo "Project $project_name doesn't exist."
+        return
+    fi
+
+    if [ ! -d "$PROJECT_HOOKS_D" ]; then
+        mkdir -p "$PROJECT_HOOKS_D"
+    fi
+
+    $EDITOR "$PROJECT_HOOKS_D/$project_name.sh"
+}
+
+run_project_hooks() {
+    if [ -f "$PROJECT_HOOKS_D/$1.sh" ]; then
+        source "$PROJECT_HOOKS_D/$1.sh"
+    fi
 }
 
 usage() {
@@ -230,6 +264,7 @@ Commands:
     search|s     Search for projects by name
     list|ls      List all projects
     cd           Change directory into project
+    edit-hook|eh Edit the hook script when entering a project
 EOF
 }
 
@@ -263,6 +298,8 @@ case "$1" in
         shift; removeProjectFromList $@;;
     version|ver|v)
         shift; showVersion $@;;
+    edit-hook|eh)
+        shift; edit_project_hook $@;;
     *)
         usage
 esac
