@@ -3,7 +3,8 @@
 project() {
 local PROJECT_LIST=${PROJECT_LIST:-$HOME/.project.list}
 
-confirmPrompt() {
+# Prompt with a default of no
+confirmPromptN() {
     if [[ "$SHELL" =~ "zsh" ]]; then
         read "response?$1 [y/N]? "
     else
@@ -15,6 +16,21 @@ confirmPrompt() {
         return
     fi
     echo "n"
+}
+
+# Prompt with a default of yes
+confirmPromptY() {
+    if [[ "$SHELL" =~ "zsh" ]]; then
+        read "response?$1 [Y/n]? "
+    else
+        read -r -p "$1 [Y/n]? " response
+    fi
+
+    if [[ $response =~ ^([nN][oO]|[nN])$ ]]; then
+        echo "n"
+        return
+    fi
+    echo "y"
 }
 
 makeNewListFile() {
@@ -35,7 +51,7 @@ makeNewListFile() {
 
 promptNewListFile() {
     echo "Project list doesn't exist."
-    response="$(confirmPrompt "Would you like to make it? $PROJECT_LIST")"
+    response="$(confirmPromptY "Would you like to make it? $PROJECT_LIST")"
     if [ "$response" = "y" ]; then
         makeNewListFile
         return $?
@@ -68,7 +84,7 @@ addProjectToList() {
     if [ -z "$project_name" ]; then
         promptName="$(basename $PWD)"
         echo "No project name given."
-        response="$(confirmPrompt "Would you like to use $promptName")"
+        response="$(confirmPromptY "Would you like to use $promptName")"
         if [ "$response" = "y" ]; then
             project_name="$promptName"
         else
@@ -98,7 +114,7 @@ addProjectToList() {
     checkProjectPathExists "$project_path"
     if [ $? -ne 0 ]; then
         echo "Project path $project_path already exists"
-        response="$(confirmPrompt "Would you like to add a duplicate project?")"
+        response="$(confirmPromptN "Would you like to add a duplicate project?")"
         if [ "$response" != "y" ]; then
             return
         fi
@@ -219,7 +235,7 @@ EOF
 
 showVersion() {
     cat <<"EOF"
-project-list - v1.6.0
+project-list - v1.7.0
 
 Copyright 2017 Lee Keitel <lee@onesimussystems.com>
 
