@@ -3,6 +3,18 @@
 project() {
 local PROJECT_LIST=${PROJECT_LIST:-$HOME/.project.list}
 local PROJECT_HOOKS_D=${PROJECT_HOOKS_D:-$HOME/.project-hooks.d}
+local PEDITOR=${PEDITOR:-vim}
+local SYSTEM_TYPE="$(uname)"
+
+local GREP_CMD="grep"
+if [[ $SYSTEM_TYPE = "Darwin" ]]; then
+    GREP_CMD="ggrep"
+fi
+
+local REALPATH_CMD="realpath"
+if [[ $SYSTEM_TYPE = "Darwin" ]]; then
+    REALPATH_CMD="grealpath"
+fi
 
 # Prompt with a default of no
 confirmPromptN() {
@@ -62,19 +74,19 @@ promptNewListFile() {
 }
 
 projectExists() {
-    project="$(grep -P "^$1:" "$PROJECT_LIST")"
+    project="$($GREP_CMD -P "^$1:" "$PROJECT_LIST")"
     [ -z "$project" ]
     return $?
 }
 
 checkProjectPathExists() {
-    project="$(grep -P ":$1$" "$PROJECT_LIST")"
+    project="$($GREP_CMD -P ":$1$" "$PROJECT_LIST")"
     [ -z "$project" ]
     return $?
 }
 
 checkProjectName() {
-    [ -z "$(echo "$1" | grep ':')" ]
+    [ -z "$(echo "$1" | $GREP_CMD ':')" ]
     return $?
 }
 
@@ -110,7 +122,7 @@ addProjectToList() {
         return
     fi
 
-    project_path="$(realpath $project_path)"
+    project_path="$($REALPATH_CMD $project_path)"
 
     checkProjectPathExists "$project_path"
     if [ $? -ne 0 ]; then
@@ -143,7 +155,7 @@ removeProjectFromList() {
         return
     fi
 
-    newList="$(grep -vP "^$1:" "$PROJECT_LIST")"
+    newList="$($GREP_CMD -vP "^$1:" "$PROJECT_LIST")"
     echo "$newList" > "$PROJECT_LIST"
 }
 
@@ -167,7 +179,7 @@ searchForProjects() {
     fi
 
     echo "Projects:"
-    grep -P "^[^:]*?${project_name}[^:]*?:" "$PROJECT_LIST" | \
+    $GREP_CMD -P "^[^:]*?${project_name}[^:]*?:" "$PROJECT_LIST" | \
         awk -F: '{ print "  " $1 "\t" $2 }' | column -t -s $'\t'
 }
 
@@ -180,7 +192,7 @@ changeToProjectDir() {
     fi
 
     grep_regex="^[^:]*?${project_name}[^:]*?:"
-    projects="$(grep -P "$grep_regex" "$PROJECT_LIST" | \
+    projects="$($GREP_CMD -P "$grep_regex" "$PROJECT_LIST" | \
         awk -F: '{ printf $2; printf ":" }')"
     projects="${projects%?}"
 
@@ -191,7 +203,7 @@ changeToProjectDir() {
     fi
 
     if [ ${#projectsArr[@]} -eq 1 ]; then
-        project_name="$(grep "${projectsArr}" $PROJECT_LIST | cut -d':' -f1)"
+        project_name="$($GREP_CMD "${projectsArr}" $PROJECT_LIST | cut -d':' -f1)"
         cd "${projectsArr}"
         run_project_hooks "$project_name"
         return
@@ -216,7 +228,7 @@ changeToProjectDir() {
         return
     fi
 
-    project_name="$(grep "${dest}" $PROJECT_LIST | cut -d':' -f1)"
+    project_name="$($GREP_CMD "${dest}" $PROJECT_LIST | cut -d':' -f1)"
     cd "$dest"
     run_project_hooks "$project_name"
 }
@@ -239,7 +251,7 @@ edit_project_hook() {
         mkdir -p "$PROJECT_HOOKS_D"
     fi
 
-    $EDITOR "$PROJECT_HOOKS_D/$project_name.sh"
+    $PEDITOR "$PROJECT_HOOKS_D/$project_name.sh"
 }
 
 run_project_hooks() {

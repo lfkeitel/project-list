@@ -24,6 +24,12 @@ If you use oh-my-zsh, clone this repository into `$HOME/.oh-my.zsh/custom/plugin
 
 ZSH may error when project is ran for the first time, it's safe to ignore.
 
+### macOS Users
+
+This script relies on the GNU versions of realpath and grep. Because of this, you
+will need to install `coreutils` and `grep`. These can be installed via Homebrew
+with `brew install coreutils grep`.
+
 ## Usage
 
 For usage information type `project help`.
@@ -59,3 +65,18 @@ To list known projects:
 ```sh
 project ls
 ```
+
+## Project Hooks
+
+Project hooks allow you to run a script after changing directory into a project.
+This can be used to activate a dev environment or startup your favorite code editor.
+Project hooks are stored in `$HOME/.project-hooks.d` by default. This can be changed
+by setting the `PROJECT_HOOKS_D` environment variable. The script doesn't need
+to be executable as it's sourced by the shell, not executed like a normal script.
+This is done so changes to the environment or sourcing other scripts works as
+expected so the environment is properly setup.
+
+Hooks can be created by making a file named `$PROJECT.sh` (replacing $PROJECT with
+the project name) under the project hooks directory. You can also run
+`project edit-hook $PROJECT` and the correct will be opened in the editor set
+with `$EDITOR` or `vim` if `$EDITOR` is not defined.
