@@ -155,10 +155,7 @@ sortProjectList() {
 
 listAllProjects() {
     echo "Projects:"
-    awk -F: '{ printf "  "; \
-        printf $1; \
-        printf " -> "; \
-        print $2 }' "$PROJECT_LIST"
+    awk -F: '{ print "  " $1 "\t" $2 }' "$PROJECT_LIST" | column -t -s $'\t'
 }
 
 searchForProjects() {
@@ -171,10 +168,7 @@ searchForProjects() {
 
     echo "Projects:"
     grep -P "^[^:]*?${project_name}[^:]*?:" "$PROJECT_LIST" | \
-        awk -F: '{ printf "  "; \
-            printf $1; \
-            printf " -> "; \
-            print $2 }'
+        awk -F: '{ print "  " $1 "\t" $2 }' | column -t -s $'\t'
 }
 
 changeToProjectDir() {
