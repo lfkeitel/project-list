@@ -118,8 +118,13 @@ addProjectToList() {
 
     projectExists "$project_name"
     if [ $? -ne 0 ]; then
-        echo "Project $project_name already exists"
-        return
+        echo "Project name $project_name already exists"
+        response="$(confirmPromptN "Would you like to update the project path?")"
+        if [ "$response" != "y" ]; then
+            return
+        fi
+
+        removeProjectFromList "$project_name"
     fi
 
     project_path="$($REALPATH_CMD $project_path)"

@@ -12,7 +12,7 @@ you can just type:
 project cd awesome-project
 ```
 
-It's a lot shorter, and less remembering.
+It's a lot shorter, and more memorable.
 
 ## Installing
 
@@ -29,6 +29,11 @@ ZSH may error when project is ran for the first time, it's safe to ignore.
 This script relies on the GNU versions of realpath and grep. Because of this, you
 will need to install `coreutils` and `grep`. These can be installed via Homebrew
 with `brew install coreutils grep`.
+
+### List File
+
+The project list is stored at `$HOME/.project.list`. This can be changed by setting the environment variable
+`PROJECT_LIST`. The file format is a simple key-value pair: `project-name:/path/to/project`.
 
 ## Usage
 
