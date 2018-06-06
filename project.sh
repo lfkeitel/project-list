@@ -106,7 +106,6 @@ addProjectToList() {
     fi
 
     if [ -z "$project_path" ]; then
-        echo "No path given, using current directory"
         project_path="$PWD"
     fi
 
